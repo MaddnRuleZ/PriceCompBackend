@@ -5,6 +5,7 @@ from Database import Database
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+
 @app.route('/getData/<tablename>')
 def get_all_data(tablename):
     try:
