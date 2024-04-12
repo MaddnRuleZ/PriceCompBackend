@@ -15,11 +15,12 @@ def get_all_data(tablename):
         return jsonify({"error": str(e)})
 
 
-@app.route('/getItem/<tablename>/<item_category>')
-def get_item_category(tablename, item_category):
+@app.route('/getItem/<tablename>/<itemid>')
+def get_item_category(tablename, itemid):
+    print("getting " + tablename + str(itemid))
     try:
         db = Database()
-        return db.get_item_category(tablename, item_category)
+        return db.get_item_category(tablename, itemid)
     except Exception as e:
         return jsonify({"error": str(e)})
 
@@ -27,17 +28,20 @@ def get_item_category(tablename, item_category):
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('email')
     password = data.get('password')
 
     if not username or not password:
         return jsonify({"error": "Username and password are required."}), 400
     try:
         db = Database()
-        if not db.insert_user(username, password):
+        identifier = db.insert_user(username, password)
+
+        if not identifier:
             return jsonify({"error": "Username already exists."}), 409
         else:
-            return jsonify({"message": "User registered successfully."}), 201
+            # Return the identifier to the frontend
+            return jsonify({"message": "User registered successfully.", "identifier": identifier}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -57,6 +61,25 @@ def login():
             return jsonify({"identifier": userIdent}), 200
         else:
             return jsonify({"error": "Invalid credentials."}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/insert_data', methods=['POST'])
+def insert_data():
+    data = request.get_json()
+    category = data.get('category')
+    item_category = data.get('item_category')
+    item = data.get('item')
+    price = data.get('price')
+    description = data.get('description')
+    url = data.get('url')
+    description = "temp Description"
+
+    try:
+        db = Database()
+        db.insert_data(category, item_category, item, price, description, url)
+        return jsonify({"message": "Data inserted successfully."}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
